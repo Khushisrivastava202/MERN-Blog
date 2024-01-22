@@ -1,24 +1,24 @@
-import express from "express"
+import express from "express";
 import mongoose from "mongoose";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 import User from "./models/user.model.js";
-import bcryptjs from "bcryptjs"
+import bcryptjs from "bcryptjs";
 import { errorHandler } from "./utils/error.js";
+import cors from "cors";
 
-  
 dotenv.config();
 
 mongoose.connect(process.env.MONGO)
-.then( () =>{
-    console.log("MongoDB is connected")
-}).catch((err) => {
-    console.log(err);
-})
+    .then(() => {
+        console.log("MongoDB is connected");
+    })
+    .catch((err) => {
+        console.log(err);
+    });
 
-const app=express();
+const app = express();
 
 app.use(express.json());
-
 
 // middleware
 
@@ -35,23 +35,28 @@ app.use((err, req, res, next) => {
     });
 });
 
+app.use(cors({
+  origin: "http://localhost:5173" // Add your allowed origin here
+}));
 
-app.get("/",(req,res)=>{
-    res.json({message:'API is working'});
+app.get("/", (req, res) => {
+    res.json({ message: "API is working" });
 });
- 
-app.post("/signup", async(req,res,next)=>{
-    const {username,email,password}=req.body;
+
+app.post("/signup", async (req, res, next) => {
+    const { username, email, password } = req.body;
 
     if (!username || !email || !password || !username.trim() || !email.trim() || !password.trim()) {
-    next(errorHandler(400,"All fields are required"));
+        next(errorHandler(400, "All fields are required"));
     }
-    const hashedPassword=bcryptjs.hashSync(password,10);
+
+    const hashedPassword = bcryptjs.hashSync(password, 10);
     const newUser = new User({
         username,
         email,
-        password:hashedPassword,
+        password: hashedPassword,
     });
+
     try {
         await newUser.save();
         res.json({ message: "SignUp Successful" });
@@ -60,7 +65,6 @@ app.post("/signup", async(req,res,next)=>{
     }
 });
 
-app.listen(3000,  () => {
+app.listen(3000, () => {
     console.log("Server is running on port 3000");
-
 });
