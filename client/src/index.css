@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@layer utilities {
+    .border-t-gradient-purple-blue-teal {
+      border-image: linear-gradient(to right, #5433FF, #20BDFF, #A5FECB);
+      border-image-slice: 1;
+    }
+  }
