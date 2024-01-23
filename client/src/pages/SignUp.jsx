@@ -23,7 +23,6 @@ const handleSubmit = async (e) => {
     setErrorMessage('Please fill out all fields');
     return;
   }
-
   try {
     setLoading(true);
     setErrorMessage(null);
@@ -33,17 +32,10 @@ const handleSubmit = async (e) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),
     });
-
-    if (!res.ok) {
-      const data = await res.json();
-      setErrorMessage(data.message || 'Username or Email already exist');
-    } else {
       const data = await res.json();
       if (data.success === false) {
         setErrorMessage(data.message);
       } 
-    }
-
     setLoading(false);
     if(res.ok){
       navigate('/signin');

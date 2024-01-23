@@ -20,7 +20,7 @@ const app = express();
 
 app.use(express.json());
 
-// middleware
+// middlewar
 
 app.use((err, req, res, next) => {
     console.error("Error caught by error handling middleware:", err);
