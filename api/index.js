@@ -6,7 +6,6 @@ import bcryptjs from "bcryptjs";
 import { errorHandler } from "./utils/error.js";
 import cors from "cors";
 import jwt from "jsonwebtoken";
-import path from 'path';
 
 dotenv.config();
 
@@ -26,7 +25,7 @@ app.use(express.json());
 
 
 app.use(cors({
-  origin: "http://localhost:5173" // Add your allowed origin here
+  origin: "http://localhost:5173" 
 }));
 
 app.get("/", (req, res) => {
