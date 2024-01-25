@@ -6,6 +6,8 @@ import bcryptjs from "bcryptjs";
 import { errorHandler } from "./utils/error.js";
 import cors from "cors";
 import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
+
 
 dotenv.config();
 
@@ -22,6 +24,7 @@ mongoose.connect(process.env.MONGO)
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 
 app.use(cors({
@@ -37,6 +40,27 @@ app.post("/signup", async (req, res, next) => {
 
     if (!username || !email || !password || !username.trim() || !email.trim() || !password.trim()) {
         next(errorHandler(400, "All fields are required"));
+    }
+    //error for pw
+    if(password){
+        if(password.length<6){
+            return next(errorHandler(403,"Password must be at least 6 characters"));
+        }
+    }
+    //errors for username
+    if(username){
+        if(username.length>7 && username.length<20){
+            return next(errorHandler(403,"Username must be between 7 and 20"));
+        }
+        if(username.includes(" ")){
+            return next(errorHandler(403,"Username cannot contain spaces"));
+        }
+        if(username !== username.toLowerCase()){
+            return next(errorHandler(403,"Username must be in lowercase"));
+        }if(!username.match(/^[a-zA-Z0-9]+$/)){
+            return next(errorHandler(403,"Username must contain letters and numbers"));
+        }
+
     }
 
     const hashedPassword = bcryptjs.hashSync(password, 10);
@@ -108,10 +132,66 @@ app.post("/google",async (req,res,next)=>{
     }
 })
 
+app.put('/update/:userId', async (req, res, next) => {
+    const token = req.cookies.access_token;
+    if (!token) {
+        return next(errorHandler(401, 'Unauthorized'));
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
+        if (err) {
+            return next(errorHandler(401, 'Unauthorized'));
+        }
+        req.user = user;
+        console.log(req.user);
+
+        // Checking if the user is authorized
+        if (req.user.id !== req.params.userId) {
+            return next(errorHandler(403, "You are not allowed to update this user"));
+        }
+
+        if (req.body.password) {
+            if (req.body.password.length < 6) {
+                return next(errorHandler(400, "Password must be at least 6 characters"));
+            }
+            req.body.password = bcryptjs.hashSync(req.body.password, 10);
+        }
+
+        if (req.body.username) {
+            if (req.body.username.length < 7 || req.body.username.length >20) {
+                return next(errorHandler(400, "Username must be between 7 and 20"));
+            }
+            if (req.body.username.includes(" ")) {
+                return next(errorHandler(400, "Username cannot contain spaces"));
+            }
+            if (req.body.username !== req.body.username.toLowerCase()) {
+                return next(errorHandler(400, "Username must be in lowercase"));
+            }
+            if (!req.body.username.match(/^[a-zA-Z0-9]+$/)) {
+                return next(errorHandler(400, "Username must contain letters and numbers"));
+            }
+            try {
+                const updatedUser = await User.findByIdAndUpdate(req.params.userId, {
+                    $set: {
+                        username: req.body.username,
+                        email: req.body.email,
+                        profilePicture: req.body.profilePicture,
+                        password: req.body.password,
+                    }
+                }, { new: true });
+                const { password, ...rest } = updatedUser._doc;
+                res.status(200).json(rest);
+            } catch (error) {
+                next(error);
+            }
+        }
+    });
+});
 
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
 });
+
 
 
 
