@@ -19,6 +19,7 @@ export default function DashProfile() {
 
   const filePickerRef=useRef();
   const dispatch=useDispatch();
+
   const handleImageChnage = (e)=>{
     const file=e.target.files[0];
     if(file){
@@ -47,6 +48,7 @@ export default function DashProfile() {
         }
       );
     };
+
     const handleChange=(e)=>{
       setFormData({...formData,[e.target.id]:e.target.value})
       };
@@ -82,6 +84,7 @@ export default function DashProfile() {
 
       }
     }
+
     const handleDeleteUser= async()=>
     {
       setShowModel(false);
@@ -102,12 +105,12 @@ export default function DashProfile() {
         dispatch(deleteUserFailure(error.message));
       }
 
-
+ 
     }
 
 
   return (
-    <div className='max-w-lg mx-auto p-3 w-full'  >
+<div className='max-w-lg mx-auto p-3 w-full'  >
 <h1 className='my-7 text-center font-semibold text-3xl'>Profile</h1>      
 <form  onSubmit={handleSubmit} className='flex flex-col gap-4'>
 <input hidden type='file' accept='image/*' onChange={handleImageChnage} ref={filePickerRef}/>
@@ -154,9 +157,7 @@ onClick={()=>filePickerRef.current.click()}>
     </div>
   </div>
 </Modal.Body>
-
 </Modal>
-
     </div>
   );
 }

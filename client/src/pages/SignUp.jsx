@@ -55,7 +55,7 @@ const handleSubmit = async (e) => {
       <div className="flex-1 ">
       <Link to="/">
       <Button outline gradientDuoTone="purpleToBlue" size="xl">TechTraverse</Button>
-</Link>
+      </Link>
  <h4 className="text-2xl font-bold mb-4 mt-4">Welcome to My Blog Project</h4>
         <p className="text-sm text-gray-600 mb-6">
           Explore engaging content and connect with the community. 

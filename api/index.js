@@ -210,6 +210,17 @@ app.delete('/delete/:userId', async(req,res,next)=>{
 }) 
 
 
+app.post('/signout', (req,res,next)=>{
+    try{
+        res.clearCookie('access_token').status(200).json('User as been signed out');
+    }catch(error){
+        next(error);
+    }
+
+
+})
+
+
 
 app.listen(3000, () => {
     console.log("Server is running on port 3000");

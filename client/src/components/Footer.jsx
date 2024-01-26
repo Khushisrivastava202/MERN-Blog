@@ -1,4 +1,3 @@
-import React from 'react'
 import { Link } from 'react-router-dom';
 import { Footer ,Button} from 'flowbite-react'
 import { BsDribbble, BsFacebook, BsGithub, BsInstagram, BsTwitter } from 'react-icons/bs';
@@ -10,8 +9,8 @@ export default function FooterCom() {
         <div className="grid w-full justify-between sm:flex sm:justify-between md:flex md:grid-cols-1">
           <div>
           <Link to="/">
-      <Button outline gradientDuoTone="purpleToBlue" size="xl" className='mb-5'>TechTraverse</Button>
-</Link>
+              <Button outline gradientDuoTone="purpleToBlue" size="xl" className='mb-5'>TechTraverse</Button>
+          </Link>
           </div>
           <div className="grid grid-cols-2 gap-8 sm:mt-4 sm:grid-cols-3 sm:gap-6">
             <div>
