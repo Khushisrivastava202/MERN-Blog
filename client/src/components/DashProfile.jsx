@@ -1,19 +1,22 @@
-import {Alert, Button, TextInput } from 'flowbite-react';
+import {Alert, Button, Modal, TextInput } from 'flowbite-react';
 import { useEffect, useRef, useState } from 'react';
 import {useSelector} from 'react-redux'
 import {getDownloadURL, getStorage, ref, uploadBytesResumable} from 'firebase/storage'
 import { app } from '../Firebase';
-import {updateStart,updateSuccess,updateFailure} from '../redux/user/userSlice.js'
+import {updateStart,updateSuccess,updateFailure,deleteUserStart,deleteUserSuccess,deleteUserFailure} from '../redux/user/userSlice.js'
 import { useDispatch} from 'react-redux';
+import {HiOutlineExclamationCircle} from 'react-icons/hi'
 
 export default function DashProfile() {
   
-  const {currentUser}=useSelector((state)=>state.user);
+  const {currentUser,error}=useSelector((state)=>state.user);
   const [imageFile,setImageFile]=useState(null);
   const [imageFileUrl,setImageFileUrl]=useState(null);
-  const [formData,setFormData]=useState({});
   const [updateUserSuccess,setUpdateUserSuccess]=useState(null);
-  const [updateUserError,setUpdateUserError]=useState(null)
+  const [updateUserError,setUpdateUserError]=useState(null);
+  const [showModel,setShowModel]=useState(false);
+  const [formData,setFormData]=useState({});
+
   const filePickerRef=useRef();
   const dispatch=useDispatch();
   const handleImageChnage = (e)=>{
@@ -36,13 +39,6 @@ export default function DashProfile() {
       const uploadTask=uploadBytesResumable(storageRef,imageFile);
       uploadTask.on(
         'state_changed',
-        // (snapshot)=>{
-        //   const progress= (snapshot.bytesTransferred / snapshot.totalBytes)*100;
-        //   setImageFileUploadProgress(progress.toFixed(0));
-        // },
-        // (error)=>{
-        //   setImgeFileUpoadError('Could Not upload Image(File must be less than 2MB')
-        // },
         ()=>{
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL)=>{
               setImageFileUrl(downloadURL);
@@ -86,6 +82,30 @@ export default function DashProfile() {
 
       }
     }
+    const handleDeleteUser= async()=>
+    {
+      setShowModel(false);
+      try{
+        dispatch(deleteUserStart());
+        const res=await fetch(`http://localhost:3000/delete/${currentUser._id}`,
+        {
+          method:'DELETE',
+        })
+        const data=await res.json();
+        if(!res.ok){
+          dispatch(deleteUserFailure(data.message));
+        }else{
+          dispatch(deleteUserSuccess(data));
+        }
+
+      }catch(error){
+        dispatch(deleteUserFailure(error.message));
+      }
+
+
+    }
+
+
   return (
     <div className='max-w-lg mx-auto p-3 w-full'  >
 <h1 className='my-7 text-center font-semibold text-3xl'>Profile</h1>      
@@ -103,7 +123,8 @@ onClick={()=>filePickerRef.current.click()}>
 
 </form>
 <div className='text-red-500 text-center mt-5'>
-  <span className='cursor-pointer'>Delete Account</span>
+  <span onClick={()=>setShowModel(true)}
+  className='cursor-pointer'>Delete Account</span>
 </div>
 {updateUserSuccess && (
   <Alert color='success' className='mt-5'>
@@ -115,6 +136,26 @@ onClick={()=>filePickerRef.current.click()}>
     {updateUserError}
   </Alert>
 )}
+{error && (
+  <Alert color='failure' className='mt-5'>
+    {error}
+  </Alert>
+)}
+<Modal show={showModel} onClose={()=>setShowModel(false)} popup size='md'>
+<Modal.Header/>
+<Modal.Body>
+  <div className='text-center'>
+    <HiOutlineExclamationCircle className='h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto'/>
+    
+    <h3 className='mb-5 text-lg text-gray-500 dark:text-gray-400'> Are you sure want to delete you account?</h3>
+    <div className='flex justify-center gap-4'>
+        <Button color='failure' onClick={handleDeleteUser}>Yes, I'm sure</Button>
+        <Button color='gray' onClick={()=> setShowModel(false)}>No, cancel</Button>
+    </div>
+  </div>
+</Modal.Body>
+
+</Modal>
 
     </div>
   );

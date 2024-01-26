@@ -185,6 +185,32 @@ app.put('/update/:userId', async (req, res, next) => {
         }
 });
 
+app.delete('/delete/:userId', async(req,res,next)=>{
+    const token = jwt.sign({ id: req.params.userId }, process.env.JWT_SECRET);
+    if (!token) {
+        return next(errorHandler(401, 'Unauthorized'));
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET,(err,user)=>{
+        if(err){
+            return next(errorHandler(401, 'Unauthorized'));
+        }
+        req.user=user;
+    });
+
+    if (req.user.id !== req.params.userId) {
+        return next( errorHandler(403, "You are not allowed to update this user"));
+    }
+    try{
+        await User.findByIdAndDelete(req.params.userId);
+        res.status(200).json('User has been deleted');
+    }catch(error){
+        next(error);
+    }
+}) 
+
+
+
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
 });
