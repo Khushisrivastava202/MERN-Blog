@@ -7,6 +7,7 @@ import { errorHandler } from "./utils/error.js";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
+import Post from "./models/post.model.js";
 
 
 dotenv.config();
@@ -96,12 +97,20 @@ app.post("/signin", async (req, res, next) => {
         if (!validPassword) {
             return next(errorHandler(400, "Invalid Password"));
         }
-
-        const token = jwt.sign({ id: validUser._id ,isAdmin:validUser.isAdmin}, process.env.JWT_SECRET);
-        const { password: pass, ...rest } = validUser._doc;
-        res.status(200).cookie('access_token', token, { httpOnly: true, }).json(rest);
+    const token = jwt.sign(
+        { id: validUser._id, isAdmin: validUser.isAdmin },
+        process.env.JWT_SECRET
+      );
+  
+      const { password: pass, ...rest } = validUser._doc;
+      res
+        .status(200)
+        .cookie('access_token', token, {
+          httpOnly: true,
+        })
+        .json(rest);
     } catch (error) {
-        next(error);
+      next(error);
     }
 });
 
@@ -216,6 +225,53 @@ app.post('/signout', (req,res,next)=>{
     }catch(error){
         next(error);
     }
+
+
+})
+
+
+app.post('/create' , async(req,res,next)=>{
+    // const token = jwt.sign({ id: req.params.userId }, process.env.JWT_SECRET);
+    //     if (!token) {
+    //         return next(errorHandler(401, 'Unauthorized'));
+    //     }
+
+    //     jwt.verify(token, process.env.JWT_SECRET,(err,user)=>{
+    //         if(err){
+    //             return next(errorHandler(401, 'Unauthorized'));
+    //         }
+    //         req.user=user;
+    //     });
+    const token = req.cookies.access_token;
+    if (token) {
+        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+            if (!err) {
+                req.user = user;
+            }
+        });
+    }
+        if (!req.user.isAdmin) {
+            return next(errorHandler(403, 'You are not allowed to create a post'));
+          }
+          if (!req.body.title || !req.body.content) {
+            return next(errorHandler(400, 'Please provide all required fields'));
+          }
+          const slug = req.body.title
+            .split(' ')
+            .join('-')
+            .toLowerCase()
+            .replace(/[^a-zA-Z0-9-]/g, '');
+          const newPost = new Post({
+            ...req.body,
+            slug,
+            userId: req.user.id,
+          });
+          try {
+            const savedPost = await newPost.save();
+            res.status(201).json(savedPost);
+          } catch (error) {
+            next(error);
+          }
 
 
 })
