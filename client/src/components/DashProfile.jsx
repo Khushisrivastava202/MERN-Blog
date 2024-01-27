@@ -1,15 +1,16 @@
 import {Alert, Button, Modal, TextInput } from 'flowbite-react';
-import { useEffect, useRef, useState } from 'react';
+import {  useEffect, useRef, useState } from 'react';
 import {useSelector} from 'react-redux'
 import {getDownloadURL, getStorage, ref, uploadBytesResumable} from 'firebase/storage'
 import { app } from '../Firebase';
 import {updateStart,updateSuccess,updateFailure,deleteUserStart,deleteUserSuccess,deleteUserFailure} from '../redux/user/userSlice.js'
 import { useDispatch} from 'react-redux';
 import {HiOutlineExclamationCircle} from 'react-icons/hi'
+import { Link } from 'react-router-dom';
 
 export default function DashProfile() {
   
-  const {currentUser,error}=useSelector((state)=>state.user);
+  const {currentUser,error,loading}=useSelector((state)=>state.user);
   const [imageFile,setImageFile]=useState(null);
   const [imageFileUrl,setImageFileUrl]=useState(null);
   const [updateUserSuccess,setUpdateUserSuccess]=useState(null);
@@ -122,7 +123,17 @@ onClick={()=>filePickerRef.current.click()}>
 <TextInput  type='text' id='username' placeholder='username' defaultValue={currentUser.username} onChange={handleChange}/>
 <TextInput  type='email' id='email' placeholder='email' defaultValue={currentUser.email} onChange={handleChange}/>
 <TextInput  type='password' id='password' placeholder='password' onChange={handleChange}/>
-<Button outline gradientDuoTone="purpleToBlue" type='submit'>Update</Button>
+<Button outline gradientDuoTone="purpleToBlue" type='submit' disabled={loading}>
+    {loading?'Loading.....':'Update'}
+</Button>
+{currentUser.isAdmin && (
+    <Link to={'/create-post'}>
+    <Button type='button'  gradientDuoTone="purpleToPink" className='w-full'>
+      Create a post
+    </Button>
+    </Link>
+  )
+}
 
 </form>
 <div className='text-red-500 text-center mt-5'>
